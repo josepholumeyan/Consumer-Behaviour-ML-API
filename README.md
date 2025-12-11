@@ -30,7 +30,7 @@ A machine learning project for predicting **product quantity sold** using histor
 Clone the repository and install dependencies:
 
 ```bash
-git clone <your_repo_url>
+git clone https://github.com/josepholumeyan/Consumer-Behaviour-ML-API
 cd Consumer-Behaviour-ML
 python -m venv venv
 # Linux/macOS
