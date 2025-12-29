@@ -13,6 +13,9 @@ quantity_pipeline = ModelPipeline(pipeline_path="Pipelines/pipeline_Quantity.pkl
 class SalesInput(BaseModel):
     data: Union[dict,List[dict]]
 
+class QuantityPredictionResponse(BaseModel):
+    quantity_prediction: List[float]
+
 def make_prediction(pipeline: ModelPipeline, input_data:dict):
     try:
         df = pd.DataFrame([input_data]) if isinstance(input_data, dict) else pd.DataFrame(input_data)
@@ -29,10 +32,10 @@ def make_prediction(pipeline: ModelPipeline, input_data:dict):
     
 
 
-@app.post("/predict/quantity")
+@app.post("/predict/quantity", response_model=QuantityPredictionResponse)
 def predict_quantity(sales_input: SalesInput):
     if not sales_input.data:
         raise HTTPException(status_code=400, detail="Input data is empty.")
     prediction = make_prediction(quantity_pipeline, sales_input.data)
-    return {"quantity_prediction": prediction}
+    return QuantityPredictionResponse(quantity_prediction=prediction)
 
