@@ -7,8 +7,10 @@ from app.validate import validate_input_data
 
 app = FastAPI(title="Sales Prediction API")
 
-
-quantity_pipeline = ModelPipeline(pipeline_path="Pipelines/pipeline_Quantity.pkl")
+try:
+    quantity_pipeline = ModelPipeline(pipeline_path="Pipelines/pipeline_Quantity.pkl")
+except Exception as e:
+    raise RuntimeError(f"Failed to initialize quantity pipeline: {e}")
 
 class SalesInput(BaseModel):
     data: Union[dict,List[dict]]

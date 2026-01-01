@@ -20,12 +20,14 @@ class ModelPipeline:
             else:
                 raise ValueError("The loaded object is not a valid model pipeline.")
         else:
+            if not model or not preprocessor:
+                raise ValueError("Both model and preprocessor must be provided if pipeline_path is not given.")
             self.pipeline=None
             self.model=model
             self.preprocessor=preprocessor
-            self.expected_columns=expected_columns#automate from preprocessor later
-            self.numeric_columns=numeric_columns
-            self.categorical_columns=categorical_columns
+            self.expected_columns=expected_columns #automate from preprocessor later
+            self.numeric_columns=preprocessor.numeric_columns if hasattr(preprocessor, 'numeric_columns') else numeric_columns
+            self.categorical_columns=preprocessor.categorical_columns if hasattr(preprocessor, 'categorical_columns') else categorical_columns
         
     def predict(self, df: pd.DataFrame):
         if not isinstance(df, pd.DataFrame):
