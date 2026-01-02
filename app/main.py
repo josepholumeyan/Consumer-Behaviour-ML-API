@@ -37,14 +37,24 @@ class SalesInput(BaseModel):
 class QuantityPredictionResponse(BaseModel):
     quantity_prediction: List[float]
 
-def make_prediction(pipeline: ModelPipeline, input_data:dict):
+def make_prediction(pipeline: ModelPipeline, input_data: Union[QuantityFeatures, List[QuantityFeatures]]):
     try:
-        df = pd.DataFrame([input_data]) if isinstance(input_data, dict) else pd.DataFrame(input_data)
+        
+        if isinstance(input_data, BaseModel):
+            data_dict = input_data.dict()
+            df = pd.DataFrame([data_dict])
+        elif isinstance(input_data, list):
+            data_dicts = [item.dict() for item in input_data]
+            df = pd.DataFrame(data_dicts)
+        else:
+            raise HTTPException(status_code=400, detail="Invalid input type")
+        
         rename_map = {f"Quantity_t_{i}": f"Quantity_t-{i}" for i in range(1, 3)}
         rename_map.update({f"UnitPrice_t_{i}": f"UnitPrice_t-{i}" for i in range(1, 3)})
         rename_map.update({f"Revenue_t_{i}": f"Revenue_t-{i}" for i in range(1, 3)})
         df = df.rename(columns=rename_map)
-        logger.info("validated_df: %s", df.describe())
+
+        logger.info("df_before_validation: %s", df.describe())
         validated_df = validate_input_data(
             df,
             expected_columns=pipeline.get_expected_columns(),
@@ -55,8 +65,10 @@ def make_prediction(pipeline: ModelPipeline, input_data:dict):
         logger.info("validated_df: %s", validated_df.describe())
         prediction = pipeline.predict(validated_df)
         return prediction.tolist()
+    
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
+
     
 
 
