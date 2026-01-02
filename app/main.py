@@ -6,7 +6,8 @@ from app.pipeline_wrapper import ModelPipeline
 from app.validate import validate_input_data
 import logging
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
 
 app = FastAPI(title="Sales Prediction API")
 
@@ -39,6 +40,10 @@ class QuantityPredictionResponse(BaseModel):
 def make_prediction(pipeline: ModelPipeline, input_data:dict):
     try:
         df = pd.DataFrame([input_data]) if isinstance(input_data, dict) else pd.DataFrame(input_data)
+        rename_map = {f"Quantity_t_{i}": f"Quantity_t-{i}" for i in range(1, 3)}
+        rename_map.update({f"UnitPrice_t_{i}": f"UnitPrice_t-{i}" for i in range(1, 3)})
+        rename_map.update({f"Revenue_t_{i}": f"Revenue_t-{i}" for i in range(1, 3)})
+        df = df.rename(columns=rename_map)
         logger.info("validated_df: %s", df.describe())
         validated_df = validate_input_data(
             df,
